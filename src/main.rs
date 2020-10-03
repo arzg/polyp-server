@@ -3,30 +3,41 @@ use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
 fn main() -> anyhow::Result<()> {
+    let stdin = io::stdin();
     let mut stdout = io::stdout();
 
-    let mut ls_processlet = Command::new("ls-polyp")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::inherit())
-        .spawn()?;
+    loop {
+        let mut stdin_text = String::new();
 
-    let ls_stdin = ls_processlet.stdin.as_mut().unwrap();
-    ls_stdin.write_all(b"/Users/aramis")?;
-    ls_stdin.flush()?;
+        stdin.read_line(&mut stdin_text)?;
+        eprintln!("polyp-server: read from client: {:#?}\r", stdin_text);
 
-    let ls_stdout = ls_processlet.wait_with_output()?.stdout;
+        // stdin_text isn’t used beyond this point yet.
 
-    let ls_processlet_msg: ProcessletMsg = serde_json::from_slice(&ls_stdout)?;
+        let mut ls_processlet = Command::new("ls-polyp")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit())
+            .spawn()?;
 
-    let server_msg = match ls_processlet_msg {
-        ProcessletMsg::NewOutput(new_output) => ServerMsg::NewText(format!("{:#?}", new_output)),
-    };
+        let ls_stdin = ls_processlet.stdin.as_mut().unwrap();
+        ls_stdin.write_all(b"/Users/aramis")?;
+        ls_stdin.flush()?;
 
-    let serialized_server_msg = serde_json::to_string(&server_msg)?;
-    stdout.write_all(serialized_server_msg.as_bytes())?;
+        let ls_stdout = ls_processlet.wait_with_output()?.stdout;
 
-    stdout.flush()?;
+        let ls_processlet_msg: ProcessletMsg = serde_json::from_slice(&ls_stdout)?;
 
-    Ok(())
+        let server_msg = match ls_processlet_msg {
+            ProcessletMsg::NewOutput(new_output) => {
+                ServerMsg::NewText(format!("{:#?}", new_output))
+            }
+        };
+
+        let serialized_server_msg = serde_json::to_string(&server_msg)?;
+        stdout.write_all(serialized_server_msg.as_bytes())?;
+        stdout.write_all(b"\n")?;
+
+        stdout.flush()?;
+    }
 }
