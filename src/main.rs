@@ -44,7 +44,7 @@ fn main() -> anyhow::Result<()> {
         };
 
         let UserInput::PressedKey(c) = user_input;
-        println!("polyp-server: client says user pressed ‘{}’\r", c);
+        println!("polyp-server: client says user pressed ‘{:?}’\r", c);
 
         processlet_websocket.write_message(Message::Binary(serde_json::to_vec(
             &UserInput::PressedKey(c),
