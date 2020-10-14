@@ -59,7 +59,18 @@ fn main() -> anyhow::Result<()> {
 
             let server_msg = match processlet_ui {
                 Ui::Value(value) => ServerMsg::NewText(format!("{:#?}", value)),
-                Ui::TextField { current_text } => ServerMsg::NewText(current_text),
+                Ui::TextField {
+                    current_text,
+                    cursor_idx,
+                } => {
+                    let with_cursor = {
+                        let mut s = current_text;
+                        s.insert(cursor_idx, '|');
+                        s
+                    };
+
+                    ServerMsg::NewText(with_cursor)
+                }
             };
 
             let serialized_server_msg = serde_json::to_vec(&server_msg)?;
