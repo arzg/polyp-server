@@ -9,5 +9,4 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.36"
-polyp = "0.5.0"
-serde_json = "1.0.60"
+polyp = "0.5.1"

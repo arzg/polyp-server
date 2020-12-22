@@ -1,5 +1,5 @@
+use polyp::protocol::Connection;
 use polyp::{Ui, UserInput};
-use std::io::{self, BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
 
 fn main() -> anyhow::Result<()> {
@@ -8,26 +8,20 @@ fn main() -> anyhow::Result<()> {
         .stdout(Stdio::piped())
         .spawn()?;
 
-    let mut kon_stdin = kon.stdin.unwrap();
-    let mut kon_stdout = BufReader::new(kon.stdout.unwrap());
+    let mut client_connection = Connection::new_from_current_process();
+    let mut kon_connection = Connection::new_from_child(kon).unwrap();
 
     loop {
-        let mut line = String::new();
-        io::stdin().read_line(&mut line)?;
-        let user_input: UserInput = serde_json::from_str(&line)?;
+        let user_input: UserInput = client_connection.recv_message()?;
         eprintln!("polyp-server: got user input {:?}\r", user_input);
 
-        serde_json::to_writer(&kon_stdin, &user_input)?;
-        kon_stdin.write_all(b"\n")?;
+        kon_connection.send_message(&user_input)?;
         eprintln!("polyp-server: forwarded user input\r");
 
-        let mut line = String::new();
-        kon_stdout.read_line(&mut line)?;
-        let ui: Ui = serde_json::from_str(&line)?;
+        let ui: Ui = kon_connection.recv_message()?;
         eprintln!("polyp-server: received UI {:?}\r", ui);
 
-        io::stdout().write_all(&serde_json::to_vec(&ui)?)?;
-        io::stdout().write_all(b"\n")?;
+        client_connection.send_message(&ui)?;
         eprintln!("polyp-server: forwarded UI\r");
     }
 }
