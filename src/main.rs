@@ -22,6 +22,8 @@ fn main() -> anyhow::Result<()> {
             ServerMsg::Shutdown => {
                 eprintln!("polyp-server: shutting down...\r");
                 kon_connection.send_message(&ProcessletMsg::Shutdown)?;
+                kon.wait()?;
+
                 return Ok(());
             }
         };
