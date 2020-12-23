@@ -9,4 +9,4 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.36"
-polyp = "0.5.1"
+polyp = {path = "../polyp"}

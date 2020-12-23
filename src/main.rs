@@ -1,5 +1,5 @@
 use polyp::protocol::Connection;
-use polyp::{Ui, UserInput};
+use polyp::{ProcessletMsg, ServerMsg, Ui, UserInput};
 use std::process::{Command, Stdio};
 
 fn main() -> anyhow::Result<()> {
@@ -12,10 +12,16 @@ fn main() -> anyhow::Result<()> {
     let mut kon_connection = Connection::new_from_child(kon).unwrap();
 
     loop {
-        let user_input: UserInput = client_connection.recv_message()?;
-        eprintln!("polyp-server: got user input {:?}\r", user_input);
+        let server_msg: ServerMsg = client_connection.recv_message()?;
+        eprintln!("polyp-server: got server message {:?}\r", server_msg);
 
-        kon_connection.send_message(&user_input)?;
+        let processlet_msg = match server_msg {
+            ServerMsg::UserInput(UserInput::PressedKey(key)) => {
+                ProcessletMsg::UserInput(UserInput::PressedKey(key))
+            }
+        };
+
+        kon_connection.send_message(&processlet_msg)?;
         eprintln!("polyp-server: forwarded user input\r");
 
         let ui: Ui = kon_connection.recv_message()?;

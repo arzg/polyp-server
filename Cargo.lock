@@ -14,9 +14,7 @@ checksum = "dc6f3ad7b9d11a0c00842ff8de1b60ee58661048eb8049ed33c73594f359d7e6"
 
 [[package]]
 name = "polyp"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53b97c283541318588553fa2b38ac7b930d4c756c46244c5d7359d415ea9dcf5"
+version = "0.7.0"
 dependencies = [
  "serde",
  "serde_json",
