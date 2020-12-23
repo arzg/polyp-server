@@ -19,6 +19,11 @@ fn main() -> anyhow::Result<()> {
             ServerMsg::UserInput(UserInput::PressedKey(key)) => {
                 ProcessletMsg::UserInput(UserInput::PressedKey(key))
             }
+            ServerMsg::Shutdown => {
+                eprintln!("polyp-server: shutting down...\r");
+                kon_connection.send_message(&ProcessletMsg::Shutdown)?;
+                return Ok(());
+            }
         };
 
         kon_connection.send_message(&processlet_msg)?;
