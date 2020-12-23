@@ -3,13 +3,13 @@ use polyp::{ProcessletMsg, ServerMsg, Ui, UserInput};
 use std::process::{Command, Stdio};
 
 fn main() -> anyhow::Result<()> {
-    let kon = Command::new("kon-polyp")
+    let mut kon = Command::new("kon-polyp")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
 
     let mut client_connection = Connection::new_from_current_process();
-    let mut kon_connection = Connection::new_from_child(kon).unwrap();
+    let mut kon_connection = Connection::new_from_child(&mut kon).unwrap();
 
     loop {
         let server_msg: ServerMsg = client_connection.recv_message()?;
